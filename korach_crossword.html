@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>תשבץ פרשת קורח – כיתה ה'</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Heebo:wght@300;400;600&display=swap');
+
+  :root {
+    --sand: #e8d5a3;
+    --sand-dark: #c9aa6e;
+    --earth: #8b5e3c;
+    --sky: #2c6e8a;
+    --sky-light: #5ba3c0;
+    --gold: #d4a017;
+    --gold-light: #f0c84a;
+    --parchment: #f5edd6;
+    --ink: #2a1a0e;
+    --correct: #4a7c59;
+    --wrong: #9b3030;
+    --cell-size: 48px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a0f05;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(139,94,60,0.3) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(44,110,138,0.2) 0%, transparent 60%);
+    min-height: 100vh;
+    font-family: 'Heebo', sans-serif;
+    color: var(--ink);
+    padding: 20px;
+  }
+
+  .page-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    padding: 28px 20px 20px;
+    background: linear-gradient(135deg, var(--earth) 0%, #5c3a1e 100%);
+    border-radius: 16px 16px 0 0;
+    border-bottom: 4px solid var(--gold);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a017' fill-opacity='0.07'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  header h1 {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--gold-light);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  header p {
+    color: var(--sand);
+    font-size: 0.95rem;
+    margin-top: 6px;
+    opacity: 0.9;
+    position: relative;
+  }
+
+  .stars {
+    color: var(--gold-light);
+    font-size: 1.1rem;
+    letter-spacing: 4px;
+    margin-bottom: 6px;
+    position: relative;
+  }
+
+  .main-panel {
+    background: var(--parchment);
+    background-image:
+      radial-gradient(ellipse at 30% 10%, rgba(212,160,23,0.08) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%238b5e3c' fill-opacity='0.03'%3E%3Ccircle cx='50' cy='50' r='40'/%3E%3C/g%3E%3C/svg%3E");
+    border-radius: 0 0 16px 16px;
+    padding: 24px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  /* GRID */
+  .grid-section {
+    flex: 0 0 auto;
+  }
+
+  #crossword-grid {
+    display: inline-grid;
+    gap: 3px;
+    background: var(--earth);
+    padding: 3px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+
+  .cell {
+    width: var(--cell-size);
+    height: var(--cell-size);
+    background: #fff;
+    position: relative;
+    border-radius: 2px;
+  }
+
+  .cell.black {
+    background: var(--earth);
+    pointer-events: none;
+  }
+
+  .cell-num {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--sky);
+    line-height: 1;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .cell input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 0;
+    caret-color: var(--sky);
+    outline: none;
+    direction: rtl;
+    z-index: 1;
+  }
+
+  .cell.active { background: #e8f4f8; }
+  .cell.highlight { background: #d0eaf3; }
+  .cell.correct { background: #c8e6c9 !important; }
+  .cell.correct input { color: var(--correct); }
+  .cell.wrong { background: #ffcdd2 !important; }
+  .cell.wrong input { color: var(--wrong); }
+
+  /* CLUES */
+  .clues-section {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .clues-box {
+    background: white;
+    border-radius: 10px;
+    border: 1.5px solid var(--sand-dark);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .clues-title {
+    background: linear-gradient(90deg, var(--sky) 0%, var(--sky-light) 100%);
+    color: white;
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .clues-title span { font-size: 1.1rem; }
+
+  .clue-list { list-style: none; padding: 8px 0; }
+
+  .clue-item {
+    padding: 7px 14px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #f0e8d8;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .clue-item:last-child { border-bottom: none; }
+  .clue-item:hover { background: #f0f8ff; }
+  .clue-item.active-clue { background: #dff0f7; font-weight: 600; }
+
+  .clue-num {
+    font-weight: 700;
+    color: var(--sky);
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 0.95rem;
+    min-width: 20px;
+  }
+
+  /* BUTTONS */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+  }
+
+  .btn-check {
+    background: linear-gradient(135deg, var(--sky) 0%, var(--sky-light) 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(44,110,138,0.4);
+  }
+  .btn-check:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(44,110,138,0.5); }
+
+  .btn-reveal {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    color: var(--ink);
+    box-shadow: 0 3px 10px rgba(212,160,23,0.4);
+  }
+  .btn-reveal:hover { transform: translateY(-1px); }
+
+  .btn-clear {
+    background: #f5f5f5;
+    color: #666;
+    border: 1.5px solid #ddd;
+  }
+  .btn-clear:hover { background: #eee; }
+
+  /* SCORE */
+  #score-display {
+    margin-top: 14px;
+    background: white;
+    border: 1.5px solid var(--sand-dark);
+    border-radius: 10px;
+    padding: 12px 16px;
+    text-align: center;
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 1.05rem;
+    display: none;
+  }
+
+  #score-display.show { display: block; }
+  .score-val { font-size: 1.6rem; font-weight: 900; color: var(--sky); }
+
+  .verse-badge {
+    background: linear-gradient(135deg, #f9f3e3, #fff);
+    border: 1px solid var(--sand-dark);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 14px;
+    font-size: 0.82rem;
+    color: var(--earth);
+    font-style: italic;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 640px) {
+    :root { --cell-size: 38px; }
+    header h1 { font-size: 1.6rem; }
+    .main-panel { flex-direction: column; padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+  <header>
+    <div class="stars">✦ ✦ ✦</div>
+    <h1>🔥 תשבץ פרשת קורח 🔥</h1>
+    <p>כיתה ה׳ | בראשית פרק ט״ז – מרד קורח</p>
+  </header>
+
+  <div class="main-panel">
+    <div class="grid-section">
+      <div id="crossword-grid"></div>
+      <div class="controls">
+        <button class="btn btn-check" onclick="checkAll()">✔ בדוק תשובות</button>
+        <button class="btn btn-reveal" onclick="revealAll()">💡 גלה הכל</button>
+        <button class="btn btn-clear" onclick="clearAll()">↺ נקה</button>
+      </div>
+      <div id="score-display">
+        ניקוד: <span class="score-val" id="score-val">0</span> / <span id="score-total">0</span>
+        <div id="score-msg" style="font-size:0.85rem; color:#555; margin-top:4px;"></div>
+      </div>
+      <div class="verse-badge">
+        ״וַיִּקַּח קֹרַח בֶּן יִצְהָר בֶּן קְהָת בֶּן לֵוִי וְדָתָן וַאֲבִירָם בְּנֵי אֱלִיאָב״<br>
+        (במדבר ט״ז, א׳)
+      </div>
+    </div>
+
+    <div class="clues-section">
+      <div class="clues-box">
+        <div class="clues-title"><span>→</span> מאוזן</div>
+        <ul class="clue-list" id="across-clues"></ul>
+      </div>
+      <div class="clues-box">
+        <div class="clues-title"><span>↓</span> מאונך</div>
+        <ul class="clue-list" id="down-clues"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// PUZZLE DATA  (8×9 grid, 0-indexed row/col)
+// ─────────────────────────────────────────
+// Words used:
+//  קורח   (5) – across row0 col0-4
+//  דתן    (3) – down   col0 row0-2
+//  עדה    (3) – across row2 col0-2
+//  לוי    (3) – down   col4 row0-2
+//  נשיא   (4) – across row4 col0-3
+//  מחתה   (4) – down   col2 row2-5
+//  קטרת   (4) – across row6 col0-3
+//  אהרן   (4) – down   col3 row4-7
+//  מרד    (3) – across row8 col0-2
+//  כבוד   (4) – down   col0 row4-7
+
+const ROWS = 9;
+const COLS = 8;
+
+// black cells positions [row, col]
+const BLACK = new Set([
+  '0,5','0,6','0,7',
+  '1,1','1,2','1,3','1,5','1,6','1,7',
+  '2,3','2,4','2,5','2,6','2,7',
+  '3,0','3,1','3,2','3,3','3,4','3,5','3,6','3,7',
+  '4,4','4,5','4,6','4,7',
+  '5,0','5,1','5,3','5,5','5,6','5,7',
+  '6,4','6,5','6,6','6,7',
+  '7,0','7,1','7,2','7,4','7,5','7,6','7,7',
+  '8,3','8,4','8,5','8,6','8,7',
+]);
+
+// answer grid (null = black, '' = empty cell to fill)
+const ANSWER = [];
+for (let r = 0; r < ROWS; r++) {
+  ANSWER.push([]);
+  for (let c = 0; c < COLS; c++) {
+    ANSWER[r].push(BLACK.has(`${r},${c}`) ? null : '');
+  }
+}
+
+// Fill answers
+function fill(row, col, word, dir) {
+  for (let i = 0; i < word.length; i++) {
+    if (dir === 'across') ANSWER[row][col + i] = word[i];
+    else ANSWER[row + i][col] = word[i];
+  }
+}
+
+// RTL Hebrew words placed left-to-right in the grid (visual left = first letter in RTL display)
+// We'll store the Hebrew letters in reading order and display RTL
+fill(0, 0, 'קורח', 'across');   // 4 letters
+fill(0, 0, 'דתן',  'down');     // 3 letters
+fill(0, 4, 'י',    'across');   // single — part of "לוי" down
+fill(0, 4, 'לוי',  'down');     // 3 letters
+fill(2, 0, 'עדה',  'across');   // 3 letters
+fill(2, 2, 'מחתה', 'down');     // 4 letters (rows 2-5 col2)
+fill(4, 0, 'נשיא', 'across');   // 4 letters
+fill(4, 3, 'אהרן', 'down');     // 4 letters (rows 4-7 col3)
+fill(4, 0, 'כבוד', 'down');     // 4 letters (rows 4-7 col0)
+fill(6, 0, 'קטרת', 'across');   // 4 letters
+fill(8, 0, 'מרד',  'across');   // 3 letters
+
+// ─────────────────────────────────────────
+// CLUES
+// ─────────────────────────────────────────
+const clues = {
+  across: [
+    { num: 1, row: 0, col: 0, len: 4, clue: 'מי הוביל את המרד נגד משה ואהרן? (בן יצהר)' },
+    { num: 3, row: 2, col: 0, len: 3, clue: 'שתי מאות וחמישים אנשים היו חלק מה____ שהתאסף' },
+    { num: 5, row: 4, col: 0, len: 4, clue: 'תואר של ראש שבט בישראל' },
+    { num: 7, row: 6, col: 0, len: 4, clue: 'מה הביאו 250 האנשים לפני ה\' (כלי להקטרה)' },
+    { num: 8, row: 8, col: 0, len: 3, clue: 'מה עשו קורח ועדתו נגד משה? (מרידה)' },
+  ],
+  down: [
+    { num: 1, row: 0, col: 0, len: 3, clue: 'אחד ממנהיגי המרד – בן אליאב משבט ראובן' },
+    { num: 2, row: 0, col: 4, len: 3, clue: 'שבטו של קורח (בן קהת בן ______)' },
+    { num: 4, row: 2, col: 2, len: 4, clue: 'כלי שהביאו 250 האנשים כדי להקטיר בו' },
+    { num: 6, row: 4, col: 3, len: 4, clue: 'אחיו של משה, הכהן הגדול' },
+    { num: 9, row: 4, col: 0, len: 4, clue: 'השכינה – _____ ה\' נראה אל כל העדה' },
+  ]
+};
+
+// ─────────────────────────────────────────
+// BUILD GRID
+// ─────────────────────────────────────────
+let selectedClue = null;
+let cellInputs = {};
+
+function key(r, c) { return `${r},${c}`; }
+
+function getCellClue(r, c) {
+  for (const cl of [...clues.across, ...clues.down]) {
+    const dir = clues.across.includes(cl) ? 'across' : 'down';
+    for (let i = 0; i < cl.len; i++) {
+      const tr = dir === 'across' ? cl.row : cl.row + i;
+      const tc = dir === 'across' ? cl.col + i : cl.col;
+      if (tr === r && tc === c) return cl;
+    }
+  }
+  return null;
+}
+
+function getCluesForCell(r, c) {
+  const result = [];
+  for (const dir of ['across', 'down']) {
+    for (const cl of clues[dir]) {
+      for (let i = 0; i < cl.len; i++) {
+        const tr = dir === 'across' ? cl.row : cl.row + i;
+        const tc = dir === 'across' ? cl.col + i : cl.col;
+        if (tr === r && tc === c) result.push({ cl, dir });
+      }
+    }
+  }
+  return result;
+}
+
+function getClueCells(cl, dir) {
+  const cells = [];
+  for (let i = 0; i < cl.len; i++) {
+    const r = dir === 'across' ? cl.row : cl.row + i;
+    const c = dir === 'across' ? cl.col + i : cl.col;
+    cells.push([r, c]);
+  }
+  return cells;
+}
+
+function highlightClue(cl, dir) {
+  document.querySelectorAll('.cell').forEach(el => {
+    el.classList.remove('highlight', 'active');
+  });
+  document.querySelectorAll('.clue-item').forEach(el => el.classList.remove('active-clue'));
+
+  getClueCells(cl, dir).forEach(([r, c]) => {
+    const el = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+    if (el) el.classList.add('highlight');
+  });
+
+  selectedClue = { cl, dir };
+
+  const suffix = dir === 'across' ? 'a' : 'd';
+  const clueEl = document.getElementById(`clue-${cl.num}-${suffix}`);
+  if (clueEl) {
+    clueEl.classList.add('active-clue');
+    clueEl.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+const gridEl = document.getElementById('crossword-grid');
+gridEl.style.gridTemplateColumns = `repeat(${COLS}, var(--cell-size))`;
+gridEl.style.gridTemplateRows = `repeat(${ROWS}, var(--cell-size))`;
+
+// Compute cell numbers
+const cellNums = {};
+let numCounter = 1;
+for (let r = 0; r < ROWS; r++) {
+  for (let c = 0; c < COLS; c++) {
+    if (ANSWER[r][c] === null) continue;
+    const startsAcross = clues.across.some(cl => cl.row === r && cl.col === c);
+    const startsDown = clues.down.some(cl => cl.row === r && cl.col === c);
+    if (startsAcross || startsDown) {
+      cellNums[key(r, c)] = numCounter++;
+    }
+  }
+}
+
+for (let r = 0; r < ROWS; r++) {
+  for (let c = 0; c < COLS; c++) {
+    const div = document.createElement('div');
+    div.className = 'cell';
+    div.dataset.row = r;
+    div.dataset.col = c;
+
+    if (ANSWER[r][c] === null) {
+      div.classList.add('black');
+    } else {
+      if (cellNums[key(r, c)]) {
+        const num = document.createElement('div');
+        num.className = 'cell-num';
+        num.textContent = cellNums[key(r, c)];
+        div.appendChild(num);
+      }
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.maxLength = 1;
+      input.dir = 'rtl';
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+
+      input.addEventListener('focus', () => {
+        const matching = getCluesForCell(r, c);
+        if (matching.length > 0) {
+          const pref = matching.find(m => selectedClue && m.dir === selectedClue.dir) || matching[0];
+          highlightClue(pref.cl, pref.dir);
+        }
+        div.classList.add('active');
+      });
+
+      input.addEventListener('input', e => {
+        const val = e.target.value.replace(/[^א-ת]/g, '');
+        e.target.value = val.slice(-1);
+        // Auto-advance
+        if (val && selectedClue) {
+          const { cl, dir } = selectedClue;
+          const cells = getClueCells(cl, dir);
+          const idx = cells.findIndex(([rr, cc]) => rr === r && cc === c);
+          if (idx < cells.length - 1) {
+            const [nr, nc] = cells[idx + 1];
+            const nextInput = cellInputs[key(nr, nc)];
+            if (nextInput) nextInput.focus();
+          }
+        }
+      });
+
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !e.target.value && selectedClue) {
+          const { cl, dir } = selectedClue;
+          const cells = getClueCells(cl, dir);
+          const idx = cells.findIndex(([rr, cc]) => rr === r && cc === c);
+          if (idx > 0) {
+            const [pr, pc] = cells[idx - 1];
+            const prevInput = cellInputs[key(pr, pc)];
+            if (prevInput) { prevInput.value = ''; prevInput.focus(); }
+          }
+        }
+      });
+
+      div.appendChild(input);
+      cellInputs[key(r, c)] = input;
+    }
+
+    gridEl.appendChild(div);
+  }
+}
+
+// ─────────────────────────────────────────
+// BUILD CLUE LISTS
+// ─────────────────────────────────────────
+function buildClueList(dirKey, ulId) {
+  const ul = document.getElementById(ulId);
+  clues[dirKey].forEach(cl => {
+    const li = document.createElement('li');
+    li.className = 'clue-item';
+    li.id = `clue-${cl.num}-${dirKey === 'across' ? 'a' : 'd'}`;
+    li.innerHTML = `<span class="clue-num">${cl.num}</span><span>${cl.clue}</span>`;
+    li.addEventListener('click', () => {
+      highlightClue(cl, dirKey);
+      const firstCell = getClueCells(cl, dirKey)[0];
+      const inp = cellInputs[key(firstCell[0], firstCell[1])];
+      if (inp) inp.focus();
+    });
+    ul.appendChild(li);
+  });
+}
+
+buildClueList('across', 'across-clues');
+buildClueList('down', 'down-clues');
+
+// ─────────────────────────────────────────
+// CHECK / REVEAL / CLEAR
+// ─────────────────────────────────────────
+function checkAll() {
+  let correct = 0, total = 0;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (ANSWER[r][c] === null) continue;
+      total++;
+      const inp = cellInputs[key(r, c)];
+      const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+      cell.classList.remove('correct', 'wrong');
+      if (inp.value) {
+        if (inp.value === ANSWER[r][c]) { cell.classList.add('correct'); correct++; }
+        else cell.classList.add('wrong');
+      }
+    }
+  }
+  const disp = document.getElementById('score-display');
+  disp.classList.add('show');
+  document.getElementById('score-val').textContent = correct;
+  document.getElementById('score-total').textContent = total;
+  const pct = Math.round(correct / total * 100);
+  const msgs = ['נסו שוב! 💪', 'טוב! עוד קצת 🌟', 'יפה מאוד! 👍', 'מצוין! כמעט שלם 🎉', '🏆 מושלם! כל הכבוד!'];
+  document.getElementById('score-msg').textContent = msgs[Math.floor(pct / 25)];
+}
+
+function revealAll() {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (ANSWER[r][c] === null) continue;
+      const inp = cellInputs[key(r, c)];
+      const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+      inp.value = ANSWER[r][c];
+      cell.classList.remove('wrong');
+      cell.classList.add('correct');
+    }
+  }
+  document.getElementById('score-display').classList.add('show');
+  document.getElementById('score-val').textContent = '✓';
+  document.getElementById('score-total').textContent = '✓';
+  document.getElementById('score-msg').textContent = 'כל התשובות גולו';
+}
+
+function clearAll() {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (ANSWER[r][c] === null) continue;
+      const inp = cellInputs[key(r, c)];
+      const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+      inp.value = '';
+      cell.classList.remove('correct', 'wrong');
+    }
+  }
+  document.getElementById('score-display').classList.remove('show');
+}
+</script>
+</body>
+</html>
